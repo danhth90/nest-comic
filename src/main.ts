@@ -1,9 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as compression from 'compression';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const port = process.env.port || 3000;
-  await app.listen(port);
+  app.use(compression());
+  app.enableCors();
+  await app.listen(AppModule.port);
 }
 bootstrap();

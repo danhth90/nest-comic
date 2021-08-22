@@ -1,0 +1,15 @@
+export default {
+    HOST:'http://localhost',
+    PORT: '8080',
+    POSTGRES_HOST:'127.0.0.1',
+    POSTGRES_PORT:'5432',
+    POSTGRES_USER:'postgres',
+    POSTGRES_PASSWORD:'P@ssw0rd',
+    POSTGRES_DATABASE:'ipgtrading',
+    MODE:'DEV',
+    RUN_MIGRATIONS:'true',
+    JWT_ACCESS_TOKEN_SECRET: 'IPG',
+    JWT_ACCESS_TOKEN_EXPIRATION_TIME: '60',
+    JWT_REFRESH_TOKEN_SECRET: 'IPG_REFRESH',
+    JWT_REFRESH_TOKEN_EXPIRATION_TIME: '120'
+}
