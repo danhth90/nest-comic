@@ -1,4 +1,5 @@
-import { Controller, Get, Query, Req } from '@nestjs/common';
+import { Controller, Get, Query, Req, Request, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { TruyentranhaudoService } from './truyentranhaudo/truyentranhaudo.service';
 
 @Controller('crawler')
@@ -15,5 +16,11 @@ export class CrawlerController {
     @Get('read-chapter')
     public async ReadChapter(@Query() chapter: any){
         return this.ttadSvr.getImageByChapter(chapter.name);
+    }
+
+    @Get('img')
+    public async image(@Query() query,  @Res() response: Response){
+        response = await this.ttadSvr.download(query.name, response);
+        return response
     }
 }

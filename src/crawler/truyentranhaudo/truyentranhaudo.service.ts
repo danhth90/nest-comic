@@ -4,25 +4,25 @@ import { KeySplit } from 'src/shared/keysplit.const';
 
 const { curly } = require('node-libcurl');
 const querystring = require('querystring');
-
+const fs = require('fs');
+const request = require('request');
+const http = require('http')
 @Injectable()
 export class TruyentranhaudoService {
     private comicName: string;
     private siteCrawler: string = KeySplit.TTAD.Host;
-    constructor(){
+    constructor() {
 
     }
 
-    public async getListChapter(commicName){
+    public async getListChapter(commicName) {
         const { statusCode, data, headers } = await curly.post(`${this.siteCrawler}${commicName}.html`, {
             postFields: querystring.stringify({
                 field: 'value',
             }),
-            // can use `postFields` or `POSTFIELDS`
         });
-        
+
         const dataChapter = this.splitChapter(data);
-        console.log(dataChapter)
         return dataChapter
     }
 
@@ -31,10 +31,8 @@ export class TruyentranhaudoService {
             postFields: querystring.stringify({
                 field: 'value',
             }),
-            // can use `postFields` or `POSTFIELDS`
-        })
-
-
+        });
+        
         return this.splitContentGetImage(data);
     }
 
@@ -43,20 +41,31 @@ export class TruyentranhaudoService {
         const $ = cheerio.load(data);
         const eleLi: any = $(KeySplit.TTAD.KeyImg);
         let dataImg = [];
-        console.log($(eleLi).html())
-        $(eleLi).each(function(i, liElement){
-            dataImg.push(KeySplit.TTAD.Host + $(this).attr("src"));
-            
+        let that = this;
+        $(eleLi).each(function(){
+            const str = $(this).attr("src");
+
+        if (str.indexOf("http") === -1)
+            dataImg.push(KeySplit.TTAD.Host + str);
+        else
+        {
+            dataImg.push(str);
+        }
         });
+
         return dataImg;
     }
 
-    private async splitChapter(data:string) {
+    private async handleElementImage($){
+        
+    }
+
+    private async splitChapter(data: string) {
         data = data.replace(/(\r\n|\n|\r)/gm, "");
         const $ = cheerio.load(data);
         const eleLi: any = $(KeySplit.TTAD.KeyChapter);
         let listChapter = [];
-        $(eleLi).each(function(i, liElement){
+        $(eleLi).each(function (i, liElement) {
             const alink = $(this).html();
             const $$ = cheerio.load(alink);
             const link = $$("a").attr("href");
@@ -71,5 +80,44 @@ export class TruyentranhaudoService {
             ]
         });
         return listChapter;
+    }
+
+    async download(url, res) {
+    var Stream = require('stream').Transform;                                       
+    
+    
+    return http.request(url, function(response) {                                        
+      var data = new Stream();                                                    
+    
+      response.on('data', function(chunk) {                                       
+        data.push(chunk);                                                         
+      });                                                                         
+    
+      response.on('end', function() {                                             
+        fs.writeFileSync('image.png', data.read());                               
+      });                                                                         
+    }).end();
+
+        /* Create an empty file where we can save data */
+        // const file = fs.createWriteStream(dest);
+        /* Using Promises so that we can use the ASYNC AWAIT syntax */
+        // await new Promise((resolve, reject) => {
+        //     request({
+        //         uri: url,
+        //         gzip: true,
+        //     }).on('finish', async (data)=>{
+        //         console.log(data)
+        //     })
+        //     .pipe(file)
+        //         .on('finish', async () => {
+        //             console.log(`The file is finished downloading.`);
+        //             resolve(true);
+        //         })
+        //         .on('error', (error) => {
+        //             reject(error);
+        //         });
+        // }).catch((error) => {
+        //     console.log(`Something happened: ${error}`);
+        // });
     }
 }
