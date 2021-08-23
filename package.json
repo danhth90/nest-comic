@@ -1,9 +1,6 @@
 {
   "name": "comic",
   "version": "0.0.1",
-  "engines": {
-    "node": "14.7.1"
-  },
   "description": "",
   "author": "",
   "private": true,
