@@ -16,18 +16,31 @@ export class TruyentranhaudoService {
     }
 
     public async getListChapter(commicName) {
-        const { statusCode, data, headers } = await curly.post(`${this.siteCrawler}${commicName}.html`, {
-            postFields: querystring.stringify({
-                field: 'value',
-            }),
-        });
-
-        const dataChapter = this.splitChapter(data);
-        return dataChapter
+        try {
+            const { statusCode, data, headers } = await curly.get(`${this.siteCrawler}${commicName}.html`);    
+            if(statusCode == 200)
+            {
+                try {
+                    const dataChapter = await this.splitChapter(data);
+                    return {statusCode, data:dataChapter};
+                } catch (error) {
+                    return {statusCode, error};
+                }
+            }
+            else{
+                return {statusCode: statusCode, Msg: "Loi gi do"}
+            }
+        } catch (error) {
+            console.log(error)
+            return {statusCode: error.code, Msg: error.message}
+        }
+        
+        
+        
     }
 
     public async getImageByChapter(chapter: string) {
-        const { statusCode, data, headers } = await curly.post(`${this.siteCrawler}${chapter}`, {
+        const { statusCode, data, headers } = await curly.get(`${this.siteCrawler}${chapter}`, {
             postFields: querystring.stringify({
                 field: 'value',
             }),
