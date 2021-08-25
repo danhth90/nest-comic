@@ -28,7 +28,7 @@ export class TruyentranhaudoService {
                 }
             }
             else{
-                return {statusCode: statusCode, Msg: "Loi gi do"}
+                return {statusCode: statusCode, Msg: data}
             }
         } catch (error) {
             console.log(error)
