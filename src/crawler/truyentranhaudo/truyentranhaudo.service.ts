@@ -6,30 +6,20 @@ const { curly } = require('node-libcurl');
 const querystring = require('querystring');
 const fs = require('fs');
 const request = require('request');
-const http = require('http')
+const http = require('http');
+const browserObject = require('./../../browser');
 @Injectable()
 export class TruyentranhaudoService {
     private comicName: string;
     private siteCrawler: string = KeySplit.TTAD.Host;
+    private browserInstance = browserObject.startBrowser();
     constructor() {
-
+        
     }
 
     public async getListChapter(commicName) {
         try {
-            const { statusCode, data, headers } = await curly.get(`${this.siteCrawler}${commicName}.html`);    
-            if(statusCode == 200)
-            {
-                try {
-                    const dataChapter = await this.splitChapter(data);
-                    return {statusCode, data:dataChapter};
-                } catch (error) {
-                    return {statusCode, error};
-                }
-            }
-            else{
-                return {statusCode: statusCode, Msg: data}
-            }
+            return await this.scrapeAll(this.browserInstance, `${this.siteCrawler}${commicName}.html`);
         } catch (error) {
             console.log(error)
             return {statusCode: error.code, Msg: error.message}
@@ -40,33 +30,39 @@ export class TruyentranhaudoService {
     }
 
     public async getImageByChapter(chapter: string) {
-        const { statusCode, data, headers } = await curly.get(`${this.siteCrawler}${chapter}`, {
-            postFields: querystring.stringify({
-                field: 'value',
-            }),
-        });
-        
-        return this.splitContentGetImage(data);
+        let browser = await this.browserInstance;
+        return await this.splitContentGetImage(browser, `${this.siteCrawler}${chapter}`);
     }
 
-    private async splitContentGetImage(data: string) {
-        data = data.replace(/(\r\n|\n|\r)/gm, "");
-        const $ = cheerio.load(data);
-        const eleLi: any = $(KeySplit.TTAD.KeyImg);
-        let dataImg = [];
-        let that = this;
-        $(eleLi).each(function(){
-            const str = $(this).attr("src");
-
-        if (str.indexOf("http") === -1)
-            dataImg.push(KeySplit.TTAD.Host + str);
-        else
-        {
-            dataImg.push(str);
-        }
+    private async splitContentGetImage(browser, url) {
+        let page = await browser.newPage();
+        console.log(`Navigating to ${url}...`);
+        await page.goto(url);
+        await page.waitForSelector('body');
+        let urls = await page.$$eval('.chapter-content', links => {
+            console.log(links)
+            links = links.map(el => el.querySelector('img.chapter-img')?.src);
+            
+            return links;
         });
+        return urls;
+        // data = data.replace(/(\r\n|\n|\r)/gm, "");
+        // const $ = cheerio.load(data);
+        // const eleLi: any = $(KeySplit.TTAD.KeyImg);
+        // let dataImg = [];
+        // let that = this;
+        // $(eleLi).each(function(){
+        //     const str = $(this).attr("src");
 
-        return dataImg;
+        // if (str.indexOf("http") === -1)
+        //     dataImg.push(KeySplit.TTAD.Host + str);
+        // else
+        // {
+        //     dataImg.push(str);
+        // }
+        // });
+
+        // return dataImg;
     }
 
     private async handleElementImage($){
@@ -133,4 +129,37 @@ export class TruyentranhaudoService {
         //     console.log(`Something happened: ${error}`);
         // });
     }
+
+    async scraper(browser, url){
+        let page = await browser.newPage();
+        console.log(`Navigating to ${url}...`);
+        // Navigate to the selected page
+        await page.goto(url);
+        // Wait for the required DOM to be rendered
+        await page.waitForSelector('.card-body');
+        // Get the link to all the required books
+        let urls = await page.$$eval('.list-chapters li', links => {
+            links = links.map(el => el.querySelector('a').href);
+            
+            return links;
+        });
+        for (let index = 0; index < urls.length; index++) {
+             urls[index] = urls[index].substr(this.siteCrawler.length);
+            
+        }
+        return urls;
+    }
+
+    
+  async scrapeAll(browserInstance, url){
+    let browser;
+    try{
+        browser = await browserInstance;
+        return await this.scraper(browser,url);
+
+    }
+    catch(err){
+        console.log("Could not resolve the browser instance => ", err);
+    }
+}
 }
