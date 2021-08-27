@@ -6,7 +6,7 @@ const pageScraper = require('./pageScraper');
 @Controller()
 export class AppController {
   
-  private browserInstance = browserObject.startBrowser();
+  // private browserInstance = browserObject.startBrowser();
   
   constructor(private readonly appService: AppService) {
     //this.scrapeAll(this.browserInstance);
