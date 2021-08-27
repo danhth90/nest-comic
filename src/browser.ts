@@ -10,7 +10,8 @@ async function startBrowser(){
                 "--incognito",
                 "--no-sandbox",
                 "--single-process",
-                "--no-zygote"
+                "--no-zygote",
+                '--js-flags="--max-old-space-size=90"'
             ] 
         });
     } catch (err) {
