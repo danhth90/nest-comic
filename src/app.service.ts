@@ -7,12 +7,6 @@ export class AppService {
 
   }
   async getHello(): Promise<any> {
-
-    
-
-return "tui la danh"
+    return "tui la danh"
   }
-
-  
-  
 }
