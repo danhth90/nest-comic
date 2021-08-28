@@ -8,6 +8,11 @@ export class CrawlerController {
 
     }
 
+    @Get('get-new')
+    public async newUpdate(){
+        return this.ttadSvr.newUpdate();
+    }
+
     @Get('get-chapters')
     public async GetChapters(@Query() comicname: any){
         return this.ttadSvr.getListChapter(comicname.name);
